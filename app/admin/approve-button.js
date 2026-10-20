@@ -10,6 +10,7 @@ export default function ApproveButton({ id }) {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [pwd, setPwd] = useState("");
 
   async function approve() {
     setLoading(true);
@@ -34,11 +35,27 @@ export default function ApproveButton({ id }) {
         setLoading(false);
         return;
       }
+      if (j.tempPassword) {
+        // El correo no está configurado: mostramos la clave para compartirla a mano.
+        setPwd(j.tempPassword);
+        setLoading(false);
+        return;
+      }
       router.refresh();
     } catch (e) {
       setMsg("Error de red. Inténtalo de nuevo.");
       setLoading(false);
     }
+  }
+
+  if (pwd) {
+    return (
+      <div style={{ fontSize: 12.5, color: "var(--ink)", maxWidth: 260, textAlign: "right" }}>
+        <b>Aprobada.</b> Correo aún no configurado — clave temporal:
+        <div style={{ fontFamily: "ui-monospace, Menlo, monospace", marginTop: 4, fontSize: 14 }}>{pwd}</div>
+        <span style={{ color: "var(--muted)" }}>Compártela con el partner y recarga la página.</span>
+      </div>
+    );
   }
 
   return (
