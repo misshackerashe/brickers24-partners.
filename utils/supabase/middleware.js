@@ -27,17 +27,17 @@ export async function updateSession(request) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPanel = path.startsWith("/panel");
+  const isProtected = path.startsWith("/panel") || path.startsWith("/admin");
   const isLogin = path === "/login";
 
-  if (!user && isPanel) {
+  if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
   if (user && isLogin) {
     const url = request.nextUrl.clone();
-    url.pathname = "/panel";
+    url.pathname = "/";
     return NextResponse.redirect(url);
   }
 

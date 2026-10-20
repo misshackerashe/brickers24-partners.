@@ -63,7 +63,7 @@ export default function LoginPage() {
       setToken("");
       return;
     }
-    router.push("/panel");
+    router.push("/");
     router.refresh();
   }
 
