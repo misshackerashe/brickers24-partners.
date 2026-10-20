@@ -549,13 +549,32 @@ footer{background:var(--navy-deep);color:#aeb7d8;padding:56px 0 34px;font-size:1
 <div class="mockflag">Maqueta</div>
 
 <script>
-// Formulario de maqueta
-document.getElementById('f').addEventListener('submit',e=>{
-  e.preventDefault();const f=e.target;
-  if(!f.checkValidity()){f.reportValidity();return;}
-  document.getElementById('ok').classList.add('show');
-  f.querySelector('button[type=submit]').textContent='Solicitud enviada';
-});
+// Formulario de registro — guarda la solicitud en Supabase (partner_applications)
+(function(){
+  var SB_URL='https://unfgsuzjldcvsbbllpqw.supabase.co';
+  var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuZmdzdXpqbGRjdnNiYmxscHF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTc1NTIsImV4cCI6MjEwNzk5MzU1Mn0.5F-itNG8GjjNHif5LdyB8wzijETKdro0BAwjVtdUeys';
+  var form=document.getElementById('f');
+  var btn=form.querySelector('button[type=submit]');
+  var ok=document.getElementById('ok');
+  var val=function(n){var el=form.elements[n];return el&&el.value?el.value.trim():null;};
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(!form.checkValidity()){form.reportValidity();return;}
+    var payload={agencia:val('agencia'),ubicacion:val('ubicacion'),web:val('web'),nombre_responsable:val('nombre'),cargo:val('cargo'),email:val('correo'),telefono:val('telefono'),tipo_clientes:val('clientes'),experiencia:val('experiencia'),origen:val('origen')};
+    btn.disabled=true;btn.textContent='Enviando…';
+    fetch(SB_URL+'/rest/v1/partner_applications',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)})
+      .then(function(r){
+        if(!r.ok){throw new Error('HTTP '+r.status);}
+        ok.classList.add('show');
+        btn.textContent='Solicitud enviada';
+      })
+      .catch(function(){
+        btn.disabled=false;btn.textContent='Enviar solicitud';
+        ok.innerHTML='<b>No se pudo enviar.</b> Escríbenos a <a href="mailto:partners@brickers24.com">partners@brickers24.com</a> o inténtalo de nuevo.';
+        ok.classList.add('show');
+      });
+  });
+})();
 
 // Reveal al hacer scroll (desactivado si el usuario prefiere menos movimiento)
 (function(){
