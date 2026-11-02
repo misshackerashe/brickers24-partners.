@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import RegisterForm from "../../panel/compradores/register-form";
 import DownloadButton from "../../panel/materiales/download-button";
+import { listProjectPhotos } from "../../panel/materiales/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,8 @@ export default async function Ficha({ params }) {
     .select("id, titulo, tipo, nivel, version, estado, origen_pendiente")
     .eq("property_id", prop.id)
     .order("orden", { ascending: true });
+
+  const fotos = await listProjectPhotos(prop.slug);
 
   return (
     <div className="ficha">
@@ -92,9 +95,13 @@ export default async function Ficha({ params }) {
       <div className="sec">
         <h2>Galería</h2>
         <div className="galeria">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div className="ph" key={i}>Fotos reales pendientes</div>
-          ))}
+          {fotos.length > 0
+            ? fotos.map((f) => (
+                <div className="ph" key={f.path} style={{ padding: 0 }}>
+                  <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+                </div>
+              ))
+            : [0, 1, 2, 3, 4, 5].map((i) => <div className="ph" key={i}>Fotos reales pendientes</div>)}
         </div>
         <p className="nota">Solo fotos y video reales de lo construido. No se usan renders.</p>
       </div>

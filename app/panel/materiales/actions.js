@@ -43,3 +43,26 @@ export async function getMaterialSignedUrl(materialId) {
 
   return { url: signed.signedUrl };
 }
+
+// Lista las fotos de un proyecto (bucket privado, URLs firmadas) para la galería.
+// Accesible a admin y partners aprobados (RLS de storage).
+export async function listProjectPhotos(slug) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: list } = await supabase.storage
+    .from("materiales")
+    .list(`${slug}/fotos`, { limit: 100, sortBy: { column: "name", order: "asc" } });
+
+  const files = (list || []).filter((f) => f?.name && !f.name.startsWith("."));
+  const out = [];
+  for (const f of files) {
+    const path = `${slug}/fotos/${f.name}`;
+    const { data: s } = await supabase.storage.from("materiales").createSignedUrl(path, 300);
+    if (s?.signedUrl) out.push({ name: f.name, path, url: s.signedUrl });
+  }
+  return out;
+}
