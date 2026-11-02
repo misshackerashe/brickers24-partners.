@@ -14,7 +14,7 @@ function Submit() {
   );
 }
 
-export default function RegisterForm({ properties }) {
+export default function RegisterForm({ properties, preselectId, label }) {
   const [state, formAction] = useFormState(registerLead, { ok: false, error: "" });
   const dialogRef = useRef(null);
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function RegisterForm({ properties }) {
   return (
     <>
       <button className="btn btn-gold" onClick={() => dialogRef.current?.showModal()}>
-        ＋ Registrar comprador
+        {label || "＋ Registrar comprador"}
       </button>
       <dialog ref={dialogRef}>
         <div className="box">
@@ -45,7 +45,7 @@ export default function RegisterForm({ properties }) {
             <label>Correo<input name="email" type="email" placeholder="correo@ejemplo.com" /></label>
             <label>Teléfono<input name="telefono" type="tel" placeholder="+34 ..." /></label>
             <label className="full">Proyecto de interés
-              <select name="property_id" required defaultValue="">
+              <select name="property_id" required defaultValue={preselectId || ""}>
                 <option value="" disabled>Selecciona un proyecto</option>
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.proyecto}</option>
