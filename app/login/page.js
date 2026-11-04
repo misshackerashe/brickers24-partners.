@@ -78,7 +78,7 @@ export default function LoginPage() {
           <h2>El panel privado de la red de partners</h2>
           <p>Catálogo de proyectos, registro de compradores a tu nombre y comisiones por proyecto — todo en un solo lugar.</p>
           <div className="feats">
-            <div><span className="tick">✓</span> Proyectos de CBS Developments en República Dominicana</div>
+            <div><span className="tick">✓</span> Proyectos en República Dominicana</div>
             <div><span className="tick">✓</span> Tus compradores protegidos con fecha y hora</div>
             <div><span className="tick">✓</span> Comisiones y materiales siempre al día</div>
           </div>
