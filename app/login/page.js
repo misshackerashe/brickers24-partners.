@@ -74,6 +74,29 @@ export default function LoginPage() {
           brickers<span className="t">24</span>
           <small style={{ color: "#cdd5ee" }}>Partners</small>
         </span>
+        <div className="rd-map" aria-hidden="true">
+          <svg viewBox="0 0 400 230" role="img" aria-label="Mapa de República Dominicana">
+            <path
+              className="rd-land"
+              d="M55,92 C90,62 150,52 210,58 C250,62 290,60 312,54 C322,50 330,54 330,64 C352,78 378,100 380,116 C382,132 350,146 322,150 C270,170 200,176 150,172 C110,169 72,160 60,140 C50,124 48,106 55,92 Z"
+            />
+            <circle className="rd-ring" cx="150" cy="96" r="3" style={{ animationDelay: "0s" }} />
+            <circle className="rd-dot" cx="150" cy="96" r="3.2" />
+            <text className="rd-label" x="150" y="86" textAnchor="middle">Santiago</text>
+
+            <circle className="rd-ring" cx="185" cy="150" r="3" style={{ animationDelay: ".6s" }} />
+            <circle className="rd-dot" cx="185" cy="150" r="3.2" />
+            <text className="rd-label" x="185" y="166" textAnchor="middle">Santo Domingo</text>
+
+            <circle className="rd-ring" cx="280" cy="152" r="3" style={{ animationDelay: "1.2s" }} />
+            <circle className="rd-dot" cx="280" cy="152" r="3.2" />
+            <text className="rd-label" x="280" y="168" textAnchor="middle">La Romana</text>
+
+            <circle className="rd-ring" cx="352" cy="116" r="3" style={{ animationDelay: "1.8s" }} />
+            <circle className="rd-dot" cx="352" cy="116" r="3.2" />
+            <text className="rd-label" x="352" y="106" textAnchor="middle">Punta Cana</text>
+          </svg>
+        </div>
         <div>
           <h2>El panel privado de la red de partners</h2>
           <p>Catálogo de proyectos, registro de compradores a tu nombre y comisiones por proyecto — todo en un solo lugar.</p>
