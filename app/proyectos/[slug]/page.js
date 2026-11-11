@@ -40,6 +40,13 @@ export default async function Ficha({ params }) {
     <div className="ficha">
       <Link href="/panel/catalogo" className="crumb">← Volver al catálogo</Link>
 
+      {/* Portada */}
+      {proy.portada ? (
+        <div style={{ borderRadius: 16, overflow: "hidden", margin: "14px 0 6px", aspectRatio: "16 / 7", background: "#0b1a3a" }}>
+          <img src={proy.portada} alt={proy.nombre} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        </div>
+      ) : null}
+
       {/* Encabezado */}
       <div className="ficha-head">
         <div style={{ minWidth: 0 }}>

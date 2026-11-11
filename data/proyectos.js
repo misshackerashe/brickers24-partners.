@@ -6,6 +6,7 @@ export const PROYECTOS = {
   "arrecifes-del-sol": {
     slug: "arrecifes-del-sol",
     nombre: "Arrecifes del Sol",
+    portada: "/proyectos/arrecifes-del-sol.webp",
     constructora: "CBS Developments",
     ubicacion: "Km 16, marginal de la Autopista de Las Américas, Santo Domingo Este, RD.",
     chip: "Unidades listas · entrega inmediata",
@@ -39,6 +40,7 @@ export const PROYECTOS = {
   "velero-at-punta-cana-i": {
     slug: "velero-at-punta-cana-i",
     nombre: "Velero at Punta Cana I",
+    portada: "/proyectos/velero-at-punta-cana-i.jpg",
     constructora: "CBS Developments",
     ubicacion: "Frente al Boulevard Turístico del Este, Punta Cana, La Altagracia, RD.",
     chip: "Unidades listas · entrega inmediata",

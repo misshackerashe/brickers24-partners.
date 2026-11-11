@@ -1,4 +1,5 @@
 import { createClient } from "../../../utils/supabase/server";
+import { getProyecto } from "../../../data/proyectos";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -22,9 +23,18 @@ export default async function Catalogo() {
         <div><h1>Catálogo de proyectos</h1><p>Proyectos autorizados para tu inmobiliaria.</p></div>
       </div>
       <div className="grid-cards">
-        {(props || []).map((p, i) => (
+        {(props || []).map((p, i) => {
+          const portada = getProyecto(p.slug)?.portada;
+          return (
           <article className="pcard" key={p.id}>
-            <div className="top" style={{ background: GRADS[i % GRADS.length] }}>
+            <div
+              className="top"
+              style={
+                portada
+                  ? { backgroundImage: `url(${portada})`, backgroundSize: "cover", backgroundPosition: "center" }
+                  : { background: GRADS[i % GRADS.length] }
+              }
+            >
               {p.ubicacion ? <span className="loc">{p.ubicacion}</span> : null}
             </div>
             <div className="bd">
@@ -39,7 +49,8 @@ export default async function Catalogo() {
               ) : null}
             </div>
           </article>
-        ))}
+          );
+        })}
         {(!props || props.length === 0) && <p className="empty">El catálogo aún no tiene proyectos publicados.</p>}
       </div>
     </>
