@@ -42,20 +42,25 @@ export default function AdminMaterials({ projects }) {
   async function uploadFotos(proj, files) {
     setMsg(null);
     setBusy("fotos:" + proj.id);
-    try {
-      for (const file of files) {
-        const path = `${proj.slug}/fotos/${Date.now()}-${sanitize(file.name)}`;
-        const { error } = await supabase.storage
-          .from("materiales")
-          .upload(path, file, { upsert: false, contentType: file.type || undefined });
-        if (error) throw error;
-      }
-      setMsg({ type: "ok", text: `${files.length} foto(s) subida(s) a ${proj.proyecto}.` });
-      router.refresh();
-    } catch (e) {
-      setMsg({ type: "err", text: `No se pudo subir: ${e.message || e}` });
+    let ok = 0;
+    const errs = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const rand = Math.random().toString(36).slice(2, 8);
+      const path = `${proj.slug}/fotos/${Date.now()}-${i}-${rand}-${sanitize(file.name)}`;
+      const { error } = await supabase.storage
+        .from("materiales")
+        .upload(path, file, { upsert: false, contentType: file.type || undefined });
+      if (error) errs.push(`${file.name}: ${error.message}`);
+      else ok++;
+    }
+    if (ok > 0) {
+      setMsg({ type: "ok", text: `${ok} foto(s) subida(s) a ${proj.proyecto}.${errs.length ? ` (${errs.length} fallaron)` : ""}` });
+    } else if (errs.length) {
+      setMsg({ type: "err", text: `No se pudo subir: ${errs[0]}` });
     }
     setBusy("");
+    router.refresh();
   }
 
   async function deleteFoto(proj, path) {
