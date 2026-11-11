@@ -23,7 +23,10 @@ export default async function Materiales({ searchParams }) {
     .order("orden", { ascending: true });
 
   const rows = (mats || []).filter(
-    (m) => (!fProy || m.properties?.slug === fProy) && (!fNivel || m.nivel === fNivel)
+    (m) =>
+      m.titulo !== "Fotografías" &&
+      (!fProy || m.properties?.slug === fProy) &&
+      (!fNivel || m.nivel === fNivel)
   );
 
   return (

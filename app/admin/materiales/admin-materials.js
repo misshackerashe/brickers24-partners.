@@ -87,7 +87,7 @@ export default function AdminMaterials({ projects }) {
 
           {/* Documentación */}
           <div className="list">
-            {proj.materiales.map((mat) => (
+            {proj.materiales.filter((mat) => mat.titulo !== "Fotografías").map((mat) => (
               <div className="row-item" key={mat.id}>
                 <div className="ri-main">
                   <b>{mat.titulo}</b>
@@ -117,9 +117,9 @@ export default function AdminMaterials({ projects }) {
           {/* Fotos */}
           <div style={{ padding: "14px 16px 18px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
-              <b style={{ fontSize: 14 }}>Fotos del proyecto ({proj.fotos.length})</b>
+              <b style={{ fontSize: 14 }}>Fotografías del proyecto ({proj.fotos.length})</b>
               <label className="btn btn-gold btn-sm" style={{ cursor: "pointer" }}>
-                {busy === "fotos:" + proj.id ? "Subiendo…" : "Subir fotos"}
+                {busy === "fotos:" + proj.id ? "Subiendo…" : "Subir fotografías"}
                 <input
                   type="file"
                   accept="image/*"

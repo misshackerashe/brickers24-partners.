@@ -143,7 +143,7 @@ export default async function Ficha({ params }) {
       <div className="sec">
         <h2>Materiales del proyecto</h2>
         <div className="panel-c list">
-          {(mats || []).map((m) => (
+          {(mats || []).filter((m) => m.titulo !== "Fotografías").map((m) => (
             <div className="row-item" key={m.id}>
               <div className="ri-main">
                 <b>{m.titulo}</b>
