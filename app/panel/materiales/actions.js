@@ -72,11 +72,12 @@ export async function listProjectPhotos(slug) {
   return listStorageFolder(`${slug}/fotos`);
 }
 
-// Medios por tipo de apartamento: galería + plano.
+// Medios por tipo de apartamento: galería + plano + video.
 export async function listTypeMedia(slug, codigo) {
-  const [fotos, plano] = await Promise.all([
+  const [fotos, plano, video] = await Promise.all([
     listStorageFolder(`${slug}/tipos/${codigo}/fotos`),
     listStorageFolder(`${slug}/tipos/${codigo}/plano`),
+    listStorageFolder(`${slug}/tipos/${codigo}/video`),
   ]);
-  return { fotos, plano };
+  return { fotos, plano, video };
 }

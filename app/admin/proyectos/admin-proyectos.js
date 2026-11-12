@@ -192,6 +192,26 @@ function TypeCard({ proj, tipo, setMsg, router }) {
     router.refresh();
   }
 
+  async function uploadVideo(file) {
+    setBusy("video");
+    try {
+      // Un solo video por tipo: borra el existente primero.
+      if (tipo.video?.length) {
+        await supabase.storage.from("materiales").remove(tipo.video.map((p) => p.path));
+      }
+      const path = `${base}/video/${sanitize(file.name)}`;
+      const { error } = await supabase.storage
+        .from("materiales")
+        .upload(path, file, { upsert: true, contentType: file.type || undefined });
+      if (error) throw error;
+      setMsg({ type: "ok", text: `Video del Tipo ${tipo.codigo} actualizado.` });
+      router.refresh();
+    } catch (e) {
+      setMsg({ type: "err", text: `No se pudo subir el video: ${e.message || e}` });
+    }
+    setBusy("");
+  }
+
   async function uploadPlano(file) {
     setBusy("plano");
     try {
@@ -283,6 +303,25 @@ function TypeCard({ proj, tipo, setMsg, router }) {
             ))}
           </div>
         ) : null}
+      </div>
+
+      {/* Video de muestra del tipo */}
+      <div style={{ marginTop: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <b style={{ fontSize: 13 }}>Video de muestra {tipo.video?.length ? "" : "(sin cargar)"}</b>
+          <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
+            {busy === "video" ? "Subiendo…" : tipo.video?.length ? "Reemplazar video" : "Subir video"}
+            <input type="file" accept="video/*" hidden onChange={(e) => { const x = e.target.files?.[0]; if (x) uploadVideo(x); e.target.value = ""; }} />
+          </label>
+        </div>
+        {tipo.video?.length ? (
+          <div style={{ position: "relative", maxWidth: 420 }}>
+            <video src={tipo.video[0].url} controls style={{ width: "100%", borderRadius: 10, display: "block" }} />
+            <button className="af-x" onClick={() => borrar(tipo.video[0].path)} title="Borrar video" disabled={busy === "del:" + tipo.video[0].path} style={{ position: "absolute", top: 6, right: 6 }}>✕</button>
+          </div>
+        ) : (
+          <p style={{ color: "var(--muted)", fontSize: 12.5 }}>Sube un video corto de muestra (MP4 recomendado).</p>
+        )}
       </div>
 
       {/* Fotos del tipo */}

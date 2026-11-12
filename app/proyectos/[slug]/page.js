@@ -147,6 +147,17 @@ export default async function Ficha({ params }) {
                     </div>
                   ) : null}
 
+                  {/* Video de muestra del tipo */}
+                  {t.video?.length ? (
+                    <div style={{ marginTop: 12 }}>
+                      <div className="nota" style={{ marginBottom: 6 }}>Video de muestra</div>
+                      <div style={{ position: "relative", maxWidth: 520 }}>
+                        <video src={t.video[0].url} controls preload="metadata" style={{ width: "100%", borderRadius: 12, display: "block", background: "#0b1a3a" }} />
+                        <a className="dl-foto" href={`${t.video[0].url}&download=${encodeURIComponent(t.video[0].name)}`} title="Descargar video">⤓ Descargar</a>
+                      </div>
+                    </div>
+                  ) : null}
+
                   {/* Fotos del tipo */}
                   {t.fotos?.length ? (
                     <div style={{ marginTop: 12 }}>
