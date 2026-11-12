@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }) {
       </div>
       <div className="shell">
         <aside className="sidebar">
-          <nav className="nav"><a href="/admin">Solicitudes</a><a href="/admin/materiales">Materiales</a></nav>
+          <nav className="nav"><a href="/admin">Solicitudes</a><a href="/admin/proyectos">Proyectos</a><a href="/admin/materiales">Materiales</a></nav>
         </aside>
         <main className="main">{children}</main>
       </div>

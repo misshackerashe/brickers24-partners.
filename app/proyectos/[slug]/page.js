@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import RegisterForm from "../../panel/compradores/register-form";
 import DownloadButton from "../../panel/materiales/download-button";
-import { listProjectPhotos } from "../../panel/materiales/actions";
+import { listProjectPhotos, listTypeMedia } from "../../panel/materiales/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +23,14 @@ export default async function Ficha({ params }) {
 
   const { data: prop } = await supabase
     .from("properties")
-    .select("id, proyecto, estado_verificacion, slug")
+    .select("id, proyecto, estado_verificacion, slug, secciones")
     .eq("slug", params.slug)
     .maybeSingle();
   if (!prop) notFound();
+
+  // Secciones visibles (por defecto todo visible si no está definido).
+  const sec = prop.secciones || {};
+  const on = (k) => sec[k] !== false;
 
   const { data: mats } = await supabase
     .from("materials")
@@ -34,7 +38,28 @@ export default async function Ficha({ params }) {
     .eq("property_id", prop.id)
     .order("orden", { ascending: true });
 
+  // Tipos de apartamento (ficha técnica) + sus medios (fotos/plano).
+  const { data: tiposRows } = await supabase
+    .from("unit_types")
+    .select("id, codigo, nombre, metraje, habitaciones, banos, parqueo, descripcion, orden")
+    .eq("property_id", prop.id)
+    .eq("activo", true)
+    .order("orden", { ascending: true });
+
+  const tipos = [];
+  for (const t of tiposRows || []) {
+    const media = await listTypeMedia(prop.slug, t.codigo);
+    tipos.push({ ...t, fotos: media.fotos, plano: media.plano });
+  }
+
   const fotos = await listProjectPhotos(prop.slug);
+
+  // Materiales: la ficha comercial depende del toggle "ficha"; el resto, de "documentos".
+  const materiales = (mats || []).filter((m) => {
+    if (m.titulo === "Fotografías") return false;
+    const esFicha = /ficha/i.test(m.titulo || "");
+    return esFicha ? on("ficha") : on("documentos");
+  });
 
   return (
     <div className="ficha">
@@ -78,40 +103,89 @@ export default async function Ficha({ params }) {
         <p className="prose">{proy.descripcion}</p>
       </div>
 
-      {/* Tipologías */}
-      <div className="sec">
-        <h2>Tipologías</h2>
-        {proy.tipologias && proy.tipologias.length > 0 ? (
-          <div className="panel-c tablewrap">
-            <table>
-              <thead><tr><th>Tipo</th><th>Metraje</th><th>Habitaciones</th><th>Baños</th><th>Parqueo</th></tr></thead>
-              <tbody>
-                {proy.tipologias.map((t, i) => (
-                  <tr key={i}><td><span className="name">{t.tipo}</span></td><td>{t.m2}</td><td>{t.hab}</td><td>{t.banos}</td><td>{t.parqueo}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="prose">{proy.tipologiasTexto}</p>
-        )}
-        {proy.tipologiasNota ? <p className="nota">{proy.tipologiasNota}</p> : null}
-      </div>
+      {/* Tipos de apartamento */}
+      {on("tipologias") ? (
+        <div className="sec">
+          <h2>Tipos de apartamento</h2>
+          {tipos.length > 0 ? (
+            <div style={{ display: "grid", gap: 14 }}>
+              {tipos.map((t) => (
+                <div className="panel-c" key={t.id} style={{ padding: 16 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                    <b style={{ fontSize: 16 }}>{t.nombre || `Tipo ${t.codigo}`}</b>
+                    {t.metraje ? <span className="chip teal">{t.metraje}</span> : null}
+                  </div>
+
+                  {(t.habitaciones || t.banos || t.parqueo) ? (
+                    <div className="dist" style={{ marginTop: 10 }}>
+                      {t.habitaciones ? <div className="r"><b>Habitaciones</b><span>{t.habitaciones}</span></div> : null}
+                      {t.banos ? <div className="r"><b>Baños</b><span>{t.banos}</span></div> : null}
+                      {t.parqueo ? <div className="r"><b>Parqueo</b><span>{t.parqueo}</span></div> : null}
+                    </div>
+                  ) : null}
+
+                  {t.descripcion ? <p className="prose" style={{ marginTop: 10 }}>{t.descripcion}</p> : null}
+                  {!t.metraje && !t.habitaciones && !t.descripcion ? (
+                    <p className="nota" style={{ marginTop: 8 }}>Metrajes exactos con el inventario de CBS.</p>
+                  ) : null}
+
+                  {/* Plano del tipo */}
+                  {on("planos") && t.plano?.length ? (
+                    <div style={{ marginTop: 12 }}>
+                      <div className="nota" style={{ marginBottom: 6 }}>Plano</div>
+                      <div className="galeria">
+                        {t.plano.map((p) => (
+                          /\.pdf$/i.test(p.name) ? (
+                            <a className="ph" key={p.path} href={p.url} target="_blank" rel="noopener" style={{ textDecoration: "none" }}>Ver plano (PDF)</a>
+                          ) : (
+                            <a className="ph" key={p.path} href={p.url} target="_blank" rel="noopener" style={{ padding: 0 }}>
+                              <img src={p.url} alt="Plano" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+                            </a>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Fotos del tipo */}
+                  {t.fotos?.length ? (
+                    <div style={{ marginTop: 12 }}>
+                      <div className="nota" style={{ marginBottom: 6 }}>Fotos</div>
+                      <div className="galeria">
+                        {t.fotos.map((f) => (
+                          <div className="ph" key={f.path} style={{ padding: 0 }}>
+                            <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="prose">{proy.tipologiasTexto || "Tipologías en preparación."}</p>
+          )}
+          {proy.tipologiasNota ? <p className="nota">{proy.tipologiasNota}</p> : null}
+        </div>
+      ) : null}
 
       {/* Galería */}
-      <div className="sec">
-        <h2>Galería</h2>
-        <div className="galeria">
-          {fotos.length > 0
-            ? fotos.map((f) => (
-                <div className="ph" key={f.path} style={{ padding: 0 }}>
-                  <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
-                </div>
-              ))
-            : [0, 1, 2, 3, 4, 5].map((i) => <div className="ph" key={i}>Fotos reales pendientes</div>)}
+      {on("galeria") ? (
+        <div className="sec">
+          <h2>Galería</h2>
+          <div className="galeria">
+            {fotos.length > 0
+              ? fotos.map((f) => (
+                  <div className="ph" key={f.path} style={{ padding: 0 }}>
+                    <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+                  </div>
+                ))
+              : [0, 1, 2, 3, 4, 5].map((i) => <div className="ph" key={i}>Fotos reales pendientes</div>)}
+          </div>
+          <p className="nota">Solo fotos y video reales de lo construido. No se usan renders.</p>
         </div>
-        <p className="nota">Solo fotos y video reales de lo construido. No se usan renders.</p>
-      </div>
+      ) : null}
 
       {/* Amenidades */}
       <div className="sec">
@@ -147,24 +221,26 @@ export default async function Ficha({ params }) {
       </div>
 
       {/* Materiales del proyecto */}
-      <div className="sec">
-        <h2>Materiales del proyecto</h2>
-        <div className="panel-c list">
-          {(mats || []).filter((m) => m.titulo !== "Fotografías").map((m) => (
-            <div className="row-item" key={m.id}>
-              <div className="ri-main">
-                <b>{m.titulo}</b>
-                <div className="matmeta">
-                  <span className={`lvl ${m.nivel}`}>{NIVEL[m.nivel]}</span>
-                  {m.tipo ? <span style={{ fontSize: 12, color: "var(--muted)" }}>{TIPO[m.tipo]}</span> : null}
-                  {m.version ? <span style={{ fontSize: 12, color: "var(--muted)" }}>v {new Date(m.version).toLocaleDateString("es-ES", { dateStyle: "medium" })}</span> : null}
+      {(on("ficha") || on("documentos")) ? (
+        <div className="sec">
+          <h2>Materiales del proyecto</h2>
+          <div className="panel-c list">
+            {materiales.length > 0 ? materiales.map((m) => (
+              <div className="row-item" key={m.id}>
+                <div className="ri-main">
+                  <b>{m.titulo}</b>
+                  <div className="matmeta">
+                    <span className={`lvl ${m.nivel}`}>{NIVEL[m.nivel]}</span>
+                    {m.tipo ? <span style={{ fontSize: 12, color: "var(--muted)" }}>{TIPO[m.tipo]}</span> : null}
+                    {m.version ? <span style={{ fontSize: 12, color: "var(--muted)" }}>v {new Date(m.version).toLocaleDateString("es-ES", { dateStyle: "medium" })}</span> : null}
+                  </div>
                 </div>
+                <DownloadButton materialId={m.id} estado={m.estado} origen={m.origen_pendiente} />
               </div>
-              <DownloadButton materialId={m.id} estado={m.estado} origen={m.origen_pendiente} />
-            </div>
-          ))}
+            )) : <div className="empty" style={{ padding: 16 }}>No hay materiales disponibles.</div>}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Antes de vender */}
       <div className="sec">

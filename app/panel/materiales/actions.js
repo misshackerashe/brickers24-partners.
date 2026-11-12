@@ -44,9 +44,9 @@ export async function getMaterialSignedUrl(materialId) {
   return { url: signed.signedUrl };
 }
 
-// Lista las fotos de un proyecto (bucket privado, URLs firmadas) para la galería.
+// Lista archivos de una carpeta del bucket privado con URLs firmadas.
 // Accesible a admin y partners aprobados (RLS de storage).
-export async function listProjectPhotos(slug) {
+export async function listStorageFolder(prefix) {
   const supabase = createClient();
   const {
     data: { user },
@@ -55,14 +55,28 @@ export async function listProjectPhotos(slug) {
 
   const { data: list } = await supabase.storage
     .from("materiales")
-    .list(`${slug}/fotos`, { limit: 100, sortBy: { column: "name", order: "asc" } });
+    .list(prefix, { limit: 100, sortBy: { column: "name", order: "asc" } });
 
   const files = (list || []).filter((f) => f?.name && !f.name.startsWith("."));
   const out = [];
   for (const f of files) {
-    const path = `${slug}/fotos/${f.name}`;
+    const path = `${prefix}/${f.name}`;
     const { data: s } = await supabase.storage.from("materiales").createSignedUrl(path, 300);
     if (s?.signedUrl) out.push({ name: f.name, path, url: s.signedUrl });
   }
   return out;
+}
+
+// Fotos de la galería general del proyecto.
+export async function listProjectPhotos(slug) {
+  return listStorageFolder(`${slug}/fotos`);
+}
+
+// Medios por tipo de apartamento: galería + plano.
+export async function listTypeMedia(slug, codigo) {
+  const [fotos, plano] = await Promise.all([
+    listStorageFolder(`${slug}/tipos/${codigo}/fotos`),
+    listStorageFolder(`${slug}/tipos/${codigo}/plano`),
+  ]);
+  return { fotos, plano };
 }
